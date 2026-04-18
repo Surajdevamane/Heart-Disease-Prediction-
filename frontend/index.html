@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CardioSense — AI-powered heart disease risk prediction using a stacked ensemble of XGBoost, DNN, and Random Forest with SVC meta-learner. 95%+ accuracy on the Cleveland Heart Disease Dataset." />
+  <title>CardioSense — Heart Disease Risk Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+</head>
+<body>
+
+  <!-- ───── Header / Nav ───── -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="#hero" class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <span>CardioSense</span>
+      </a>
+      <nav class="nav" id="mainNav">
+        <a href="#hero" class="nav-link active" data-page="hero">Home</a>
+        <a href="#assess" class="nav-link" data-page="assess">Assessment</a>
+        <a href="#results" class="nav-link" data-page="results">Results</a>
+        <a href="#model-info" class="nav-link" data-page="model-info">Model Info</a>
+      </nav>
+      <div class="header-badge">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Checking…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PAGE 1 — HERO
+       ═══════════════════════════════════════════════════════ -->
+  <section class="page active" id="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Powered by Stacked Ensemble AI</div>
+      <h1>Heart Disease <span class="gradient-text">Risk Predictor</span></h1>
+      <p class="hero-subtitle">Advanced deep learning stacked ensemble model using SMOTE, Pearson Correlation feature selection, and XGBoost + DNN + Random Forest + SVC architecture.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" onclick="navigateTo('assess')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Start Assessment
+        </button>
+        <button class="btn btn-outline btn-lg" onclick="navigateTo('model-info')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          View Model Info
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">95.38%</div>
+          <div class="stat-label">Multiclass Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Base Models</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">11</div>
+          <div class="stat-label">Features Used</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">Cleveland</div>
+          <div class="stat-label">UCI Dataset</div>
+        </div>
+      </div>
+    </div>
+    <!-- Animated background shapes -->
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PAGE 2 — ASSESSMENT FORM
+       ═══════════════════════════════════════════════════════ -->
+  <section class="page" id="assess">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="page-icon">📋</div>
+        <div>
+          <h2>Patient Assessment</h2>
+          <p>Enter clinical parameters for AI-powered heart disease risk analysis.</p>
+        </div>
+      </div>
+
+      <form id="predictForm" class="assess-form" autocomplete="off">
+        <div class="form-section">
+          <h3 class="form-section-title">Demographics & Vitals</h3>
+          <div class="form-grid">
+            <!-- Age (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="age">Age <span class="form-value" id="ageVal">55</span></label>
+              <input class="form-slider" type="range" id="age" name="age" min="20" max="80" value="55" />
+              <div class="slider-range"><span>20</span><span>80</span></div>
+            </div>
+            <!-- Sex (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="sex">Sex</label>
+              <select class="form-select" id="sex" name="sex" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+              </select>
+            </div>
+            <!-- Resting BP (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="trestbps">Resting BP (mmHg) <span class="form-value" id="trestbpsVal">130</span></label>
+              <input class="form-slider" type="range" id="trestbps" name="trestbps" min="80" max="200" value="130" />
+              <div class="slider-range"><span>80</span><span>200</span></div>
+            </div>
+            <!-- Cholesterol (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="chol">Cholesterol (mg/dL) <span class="form-value" id="cholVal">240</span></label>
+              <input class="form-slider" type="range" id="chol" name="chol" min="100" max="600" value="240" />
+              <div class="slider-range"><span>100</span><span>600</span></div>
+            </div>
+            <!-- Max Heart Rate (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="thalach">Max Heart Rate <span class="form-value" id="thalachVal">150</span></label>
+              <input class="form-slider" type="range" id="thalach" name="thalach" min="60" max="220" value="150" />
+              <div class="slider-range"><span>60</span><span>220</span></div>
+            </div>
+            <!-- FBS (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="fbs">Fasting Blood Sugar &gt; 120</label>
+              <select class="form-select" id="fbs" name="fbs" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="form-section-title">Cardiac Parameters</h3>
+          <div class="form-grid">
+            <!-- Chest Pain (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="cp">Chest Pain Type</label>
+              <select class="form-select" id="cp" name="cp" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">Typical Angina</option>
+                <option value="1">Atypical Angina</option>
+                <option value="2">Non-anginal Pain</option>
+                <option value="3">Asymptomatic</option>
+              </select>
+            </div>
+            <!-- Rest ECG (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="restecg">Resting ECG</label>
+              <select class="form-select" id="restecg" name="restecg" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">Normal</option>
+                <option value="1">ST-T Abnormality</option>
+                <option value="2">LV Hypertrophy</option>
+              </select>
+            </div>
+            <!-- Exercise Angina (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="exang">Exercise Induced Angina</label>
+              <select class="form-select" id="exang" name="exang" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+            <!-- ST Depression (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="oldpeak">ST Depression <span class="form-value" id="oldpeakVal">1.0</span></label>
+              <input class="form-slider" type="range" id="oldpeak" name="oldpeak" min="0" max="6.2" step="0.1" value="1.0" />
+              <div class="slider-range"><span>0</span><span>6.2</span></div>
+            </div>
+            <!-- Slope (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="slope">Slope of Peak ST</label>
+              <select class="form-select" id="slope" name="slope" required>
+                <option value="" disabled selected>Select</option>
+                <option value="0">Upsloping</option>
+                <option value="1">Flat</option>
+                <option value="2">Downsloping</option>
+              </select>
+            </div>
+            <!-- CA (slider) -->
+            <div class="form-group">
+              <label class="form-label" for="ca">Major Vessels (CA) <span class="form-value" id="caVal">0</span></label>
+              <input class="form-slider" type="range" id="ca" name="ca" min="0" max="3" step="1" value="0" />
+              <div class="slider-range"><span>0</span><span>3</span></div>
+            </div>
+            <!-- Thal (dropdown) -->
+            <div class="form-group">
+              <label class="form-label" for="thal">Thalassemia</label>
+              <select class="form-select" id="thal" name="thal" required>
+                <option value="" disabled selected>Select</option>
+                <option value="3">Normal</option>
+                <option value="6">Fixed Defect</option>
+                <option value="7">Reversible Defect</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="resetForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 003.2 7.2M2 12.5a10 10 0 0018.8 4.2"/></svg>
+            Reset
+          </button>
+          <button type="submit" class="btn btn-primary btn-lg" id="btnPredict">
+            <span class="btn-text">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Predict Heart Disease
+            </span>
+            <span class="btn-loading">
+              <span class="spinner"></span>
+              <span id="loadingStep">Analysing…</span>
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PAGE 3 — RESULTS DASHBOARD
+       ═══════════════════════════════════════════════════════ -->
+  <section class="page" id="results">
+    <div class="page-container">
+      <!-- Placeholder (no results yet) -->
+      <div id="resultsPlaceholder" class="empty-state">
+        <div class="empty-icon">🫀</div>
+        <h2>No Results Yet</h2>
+        <p>Complete the patient assessment to see AI-powered predictions.</p>
+        <button class="btn btn-primary" onclick="navigateTo('assess')">Start Assessment</button>
+      </div>
+
+      <!-- Dynamic results (hidden until prediction) -->
+      <div id="resultsContent" style="display:none;">
+
+        <!-- 1. Risk Gauge + Verdict -->
+        <div class="results-hero" id="resultsHero">
+          <div class="gauge-container">
+            <svg class="risk-gauge" viewBox="0 0 200 120" id="riskGauge">
+              <!-- Background arc -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
+              <!-- Green zone -->
+              <path d="M 20 100 A 80 80 0 0 1 76.4 28.8" fill="none" stroke="#1D9E75" stroke-width="12" stroke-linecap="round" opacity="0.3"/>
+              <!-- Amber zone -->
+              <path d="M 76.4 28.8 A 80 80 0 0 1 140 28.8" fill="none" stroke="#BA7517" stroke-width="12" stroke-linecap="round" opacity="0.3"/>
+              <!-- Red zone -->
+              <path d="M 140 28.8 A 80 80 0 0 1 180 100" fill="none" stroke="#E24B4A" stroke-width="12" stroke-linecap="round" opacity="0.3"/>
+              <!-- Indicator arc -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" id="gaugeArc" stroke-dasharray="0 251.3"/>
+              <!-- Needle -->
+              <line x1="100" y1="100" x2="100" y2="30" stroke="white" stroke-width="2.5" stroke-linecap="round" id="gaugeNeedle" transform="rotate(-90 100 100)"/>
+              <circle cx="100" cy="100" r="5" fill="white"/>
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#1D9E75"/>
+                  <stop offset="50%" stop-color="#BA7517"/>
+                  <stop offset="100%" stop-color="#E24B4A"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="gauge-value" id="gaugeValue">0%</div>
+            <div class="gauge-label">Disease Risk</div>
+          </div>
+          <div class="verdict-banner" id="verdictBanner">
+            <div class="verdict-icon" id="verdictIcon">✓</div>
+            <div class="verdict-text" id="verdictText">No Heart Disease</div>
+            <div class="verdict-confidence" id="verdictConfidence">Confidence: 0%</div>
+          </div>
+        </div>
+
+        <!-- 2. Model Contribution Bars -->
+        <div class="dashboard-grid">
+          <div class="dash-card" id="modelContribCard">
+            <div class="dash-card-header">
+              <h3>Individual Model Scores</h3>
+              <span class="dash-badge">Ensemble</span>
+            </div>
+            <div id="modelContribBars"></div>
+            <div class="ensemble-decision" id="ensembleDecision"></div>
+          </div>
+
+          <!-- 3. Feature Contribution Chart -->
+          <div class="dash-card" id="featureCard">
+            <div class="dash-card-header">
+              <h3>Feature Contributions</h3>
+              <span class="dash-badge">PCC Scores</span>
+            </div>
+            <div id="featureChart"></div>
+          </div>
+        </div>
+
+        <!-- 4. Severity + Patient Summary + Clinical Interpretation -->
+        <div class="dashboard-grid three-col">
+          <!-- Severity -->
+          <div class="dash-card" id="severityCard">
+            <div class="dash-card-header">
+              <h3>Severity Assessment</h3>
+            </div>
+            <div id="severityContent"></div>
+          </div>
+
+          <!-- Patient Summary -->
+          <div class="dash-card" id="summaryCard">
+            <div class="dash-card-header">
+              <h3>Patient Summary</h3>
+            </div>
+            <div id="patientSummary"></div>
+          </div>
+
+          <!-- Clinical Interpretation -->
+          <div class="dash-card" id="clinicalCard">
+            <div class="dash-card-header">
+              <h3>Clinical Interpretation</h3>
+            </div>
+            <div id="clinicalContent"></div>
+          </div>
+        </div>
+
+        <!-- 5. Action Buttons -->
+        <div class="results-actions">
+          <button class="btn btn-outline" onclick="navigateTo('assess')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
+            New Assessment
+          </button>
+          <button class="btn btn-primary" onclick="downloadReport()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3"/></svg>
+            Download Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       PAGE 4 — MODEL INFO
+       ═══════════════════════════════════════════════════════ -->
+  <section class="page" id="model-info">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="page-icon">🧠</div>
+        <div>
+          <h2>Model Architecture</h2>
+          <p>Technical details of the stacked ensemble prediction system.</p>
+        </div>
+      </div>
+
+      <!-- Pipeline Flowchart -->
+      <div class="dash-card pipeline-card">
+        <div class="dash-card-header"><h3>ML Pipeline</h3></div>
+        <div class="pipeline-flow">
+          <div class="pipe-step" data-step="1">
+            <div class="pipe-icon">📊</div>
+            <div class="pipe-label">Data<br>Loading</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step" data-step="2">
+            <div class="pipe-icon">🔧</div>
+            <div class="pipe-label">Pre-<br>processing</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step" data-step="3">
+            <div class="pipe-icon">⚖️</div>
+            <div class="pipe-label">SMOTE<br>Balancing</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step" data-step="4">
+            <div class="pipe-icon">🔍</div>
+            <div class="pipe-label">PCC<br>Selection</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step pipe-step-models" data-step="5">
+            <div class="pipe-icon">🤖</div>
+            <div class="pipe-label">XGBoost<br>DNN | RF</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step pipe-step-meta" data-step="6">
+            <div class="pipe-icon">🎯</div>
+            <div class="pipe-label">SVC<br>Meta</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step pipe-step-output" data-step="7">
+            <div class="pipe-icon">💊</div>
+            <div class="pipe-label">Prediction</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Performance Comparison -->
+        <div class="dash-card">
+          <div class="dash-card-header"><h3>Performance Comparison</h3><span class="dash-badge">Paper Table 21</span></div>
+          <table class="info-table">
+            <thead>
+              <tr><th>Model</th><th>Accuracy</th></tr>
+            </thead>
+            <tbody>
+              <tr class="highlight-row"><td>Our Ensemble (XGB+DNN+RF+SVC)</td><td><strong>95.38%</strong></td></tr>
+              <tr><td>Karthikeyini et al. D-GRU</td><td>95.15%</td></tr>
+              <tr><td>ConvSGLV Ensemble</td><td>92.0%</td></tr>
+              <tr><td>DCNN (Arooj et al.)</td><td>91.7%</td></tr>
+              <tr><td>SVM</td><td>90.0%</td></tr>
+              <tr><td>RF (HRFLM)</td><td>88.7%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PCC Correlation Table -->
+        <div class="dash-card">
+          <div class="dash-card-header"><h3>PCC Feature Correlations</h3><span class="dash-badge">Paper Table 13</span></div>
+          <table class="info-table" id="pccTable">
+            <thead>
+              <tr><th>Feature</th><th>Correlation</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ca</td><td>0.5177</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>oldpeak</td><td>0.4985</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>thal</td><td>0.4846</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>slope</td><td>0.4055</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>cp</td><td>0.3946</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>thalach</td><td>0.3549</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>restecg</td><td>0.3127</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>exang</td><td>0.2650</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>age</td><td>0.2501</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>trestbps</td><td>0.2325</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr><td>sex</td><td>0.2286</td><td><span class="badge-keep">KEPT</span></td></tr>
+              <tr class="row-dropped"><td>chol</td><td>0.0244</td><td><span class="badge-drop">DROPPED</span></td></tr>
+              <tr class="row-dropped"><td>fbs</td><td>0.0234</td><td><span class="badge-drop">DROPPED</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Confusion Matrix (loaded dynamically) -->
+      <div class="dash-card" id="confusionCard" style="display:none;">
+        <div class="dash-card-header"><h3>Confusion Matrix</h3><span class="dash-badge">Binary</span></div>
+        <div id="confusionMatrix" class="confusion-grid"></div>
+      </div>
+
+      <!-- Paper Reference -->
+      <div class="dash-card reference-card">
+        <div class="dash-card-header"><h3>📜 Reference</h3></div>
+        <p>Sofi AQ, Sharma M, Teli TA, Kumar R (2025). <em>"An effective deep learning-based ensemble model for heart disease prediction."</em> Soft Computing, 29, 5893–5923. DOI: 10.1007/s00500-025-10907-2</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Toast ───── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ───── Footer ───── -->
+  <footer class="footer">
+    <p>CardioSense © 2026 · Stacked Ensemble Model (XGBoost + DNN + RF → SVC)</p>
+    <p>Built with scikit-learn, XGBoost, FastAPI · <a href="https://archive.ics.uci.edu/dataset/45" target="_blank">Cleveland Heart Disease Dataset</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
