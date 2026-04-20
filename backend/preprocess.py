@@ -135,15 +135,27 @@ def apply_smote(X, y):
 # ──────────────────────────────────────────────────────────────
 #  Master pipeline
 # ──────────────────────────────────────────────────────────────
-def run_pipeline(binary: bool = True):
+def run_pipeline(binary: bool = True, dataset_path: str = None,
+                 pcc_threshold: float = None):
     """
     Full preprocessing pipeline.
 
+    Parameters
+    ----------
+    binary : bool
+        If True, target is 0/1; else multiclass 0-4.
+    dataset_path : str or None
+        Path to a custom CSV dataset. If None, uses default Cleveland.
+        The CSV must have columns: age, sex, cp, trestbps, chol, fbs,
+        restecg, thalach, exang, oldpeak, slope, ca, thal, target
+    pcc_threshold : float or None
+        PCC correlation threshold (default: 0.2).
+
     Steps (per paper):
-    1. Load & clean (303 → 297)
+    1. Load & clean (remove rows with missing values)
     2. Label encode categoricals
     3. Binarize target if binary mode
-    4. PCC feature selection (threshold=0.2) → drop chol, fbs
+    4. PCC feature selection (threshold) → drop weak features
     5. 80:20 train/test split (stratified)
     6. SMOTE on training data ONLY (no data leakage)
     7. StandardScaler: fit on train, transform both
@@ -152,14 +164,17 @@ def run_pipeline(binary: bool = True):
     -------
     X_train, X_test, y_train, y_test, scaler, selected_features, correlation_scores
     """
-    df = load_and_clean()
+    path = dataset_path if dataset_path else DATASET_PATH
+    threshold = pcc_threshold if pcc_threshold is not None else CORRELATION_THRESHOLD
+
+    df = load_and_clean(path)
     df = encode_categoricals(df)
 
     if binary:
         df["target"] = (df["target"] > 0).astype(int)
 
     selected_features, correlation_scores = pearson_feature_selection(
-        df, threshold=CORRELATION_THRESHOLD
+        df, threshold=threshold
     )
 
     # Ensure we keep at least 5 features regardless of threshold
